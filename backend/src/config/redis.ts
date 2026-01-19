@@ -19,8 +19,16 @@ export async function initializeRedis(): Promise<void> {
 
     try {
         console.log('🔄 Attempting to connect to Redis...');
+
+        // Upstash requires TLS - enable it if URL contains upstash.io
+        const requiresTLS = redisUrl.includes('upstash.io');
+
         redisClient = createClient({
-            url: redisUrl
+            url: redisUrl,
+            socket: requiresTLS ? {
+                tls: true,
+                rejectUnauthorized: false // Upstash uses self-signed certs
+            } : undefined
         });
 
         redisClient.on('error', (err) => {
@@ -32,6 +40,7 @@ export async function initializeRedis(): Promise<void> {
         });
 
         await redisClient.connect();
+        console.log('✅ Redis connection established successfully');
     } catch (error) {
         console.error('Failed to connect to Redis:', error);
         console.warn('⚠️  Continuing without Redis - matching queue disabled');
