@@ -3,16 +3,24 @@ import { createClient, RedisClientType } from 'redis';
 let redisClient: RedisClientType | null = null;
 
 export async function initializeRedis(): Promise<void> {
+    // Debug: Log the REDIS_URL (without exposing password)
+    const redisUrl = process.env.REDIS_URL;
+    console.log('🔍 REDIS_URL exists:', !!redisUrl);
+    if (redisUrl) {
+        console.log('🔍 REDIS_URL starts with:', redisUrl.substring(0, 10));
+    }
+
     // Skip Redis initialization if REDIS_URL is not configured or invalid
-    if (!process.env.REDIS_URL || process.env.REDIS_URL === '' || process.env.REDIS_URL === 'undefined') {
+    if (!redisUrl || redisUrl === '' || redisUrl === 'undefined') {
         console.warn('⚠️  REDIS_URL not configured - Redis features disabled');
         console.warn('   App will work without matching queue features');
         return;
     }
 
     try {
+        console.log('🔄 Attempting to connect to Redis...');
         redisClient = createClient({
-            url: process.env.REDIS_URL
+            url: redisUrl
         });
 
         redisClient.on('error', (err) => {

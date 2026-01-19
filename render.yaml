@@ -17,10 +17,19 @@ services:
         fromDatabase:
           name: circle-db
           property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: circle-redis
+          property: connectionString
 
 databases:
   # PostgreSQL Database
   - name: circle-db
     databaseName: circle
+    plan: free
+    region: singapore
+
+  # Redis Cache
+  - name: circle-redis
     plan: free
     region: singapore
