@@ -92,7 +92,7 @@ export async function deleteMidnightCircles(): Promise<void> {
             console.log(`🌅 Deleted ${result.rowCount} midnight circles at sunrise`);
 
             // Also delete their summaries
-            const circleIds = result.rows.map(row => row.circle_id);
+            const circleIds = result.rows.map((row: any) => row.circle_id);
             if (circleIds.length > 0) {
                 await pool.query(`
                     DELETE FROM session_summaries 
