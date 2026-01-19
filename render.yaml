@@ -1,0 +1,35 @@
+services:
+  # Backend API Service
+  - type: web
+    name: circle-backend
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend && npm ci && npm run build
+    startCommand: cd backend && node dist/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AGORA_APP_ID
+        value: 3605bccbfb3546ccae9de1c36dfd4ebd
+      - key: DATABASE_URL
+        fromDatabase:
+          name: circle-db
+          property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: circle-redis
+          property: connectionString
+
+databases:
+  # PostgreSQL Database
+  - name: circle-db
+    databaseName: circle
+    plan: free
+    region: singapore
+
+  # Redis Cache
+  - name: circle-redis
+    plan: free
+    region: singapore
