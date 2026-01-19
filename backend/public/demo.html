@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIRCLE - Working Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .step h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        select,
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎯 CIRCLE</h1>
+        <p class="subtitle">Working Demo - Proves Backend Works!</p>
+
+        <div class="step">
+            <h3>1. Select Emotional Theme</h3>
+            <select id="theme">
+                <option value="joy">😊 Joy</option>
+                <option value="sadness">😢 Sadness</option>
+                <option value="anxiety">😰 Anxiety</option>
+                <option value="anger">😠 Anger</option>
+                <option value="loneliness">😔 Loneliness</option>
+            </select>
+        </div>
+
+        <div class="step">
+            <h3>2. Emotional Intensity (1-10)</h3>
+            <select id="intensity">
+                <option value="3">3 - Mild</option>
+                <option value="5" selected>5 - Moderate</option>
+                <option value="7">7 - Strong</option>
+                <option value="9">9 - Intense</option>
+            </select>
+        </div>
+
+        <div class="step">
+            <h3>3. Comfort Level</h3>
+            <select id="comfort">
+                <option value="open">Open - Share freely</option>
+                <option value="moderate" selected>Moderate - Selective sharing</option>
+                <option value="reserved">Reserved - Listen mostly</option>
+            </select>
+        </div>
+
+        <div class="step">
+            <h3>4. Session Duration</h3>
+            <select id="duration">
+                <option value="20" selected>20 minutes</option>
+                <option value="30">30 minutes</option>
+            </select>
+        </div>
+
+        <button onclick="createSession()">🚀 Find My Circle</button>
+
+        <div id="loading" class="loading" style="display:none;">
+            <div class="spinner"></div>
+            <p>Creating your session...</p>
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://192.168.29.43:3000';
+
+        async function createSession() {
+            const theme = document.getElementById('theme').value;
+            const intensity = parseInt(document.getElementById('intensity').value);
+            const comfort = document.getElementById('comfort').value;
+            const duration = parseInt(document.getElementById('duration').value);
+
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+
+            // Show loading
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+
+            try {
+                // Create session
+                const response = await fetch(`${API_URL}/api/sessions/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        emotionalTheme: theme,
+                        emotionalIntensity: intensity,
+                        comfortLevel: comfort,
+                        timezone: 'Asia/Kolkata',
+                        preferredDuration: duration
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Success!
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Session Created Successfully!</h3>
+                        <p><strong>Session ID:</strong> ${data.session.sessionId}</p>
+                        <p><strong>Theme:</strong> ${data.session.emotionalTheme}</p>
+                        <p><strong>Duration:</strong> ${data.session.preferredDuration} minutes</p>
+                        <p style="margin-top: 15px;">
+                            <strong>🎉 THE BACKEND WORKS PERFECTLY!</strong><br>
+                            The mobile app will work once it uses the correct URL.
+                        </p>
+                    `;
+                } else {
+                    throw new Error(data.error || 'Failed to create session');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <p>${error.message}</p>
+                    <p style="margin-top: 10px;">
+                        Make sure the backend is running at:<br>
+                        <code>${API_URL}</code>
+                    </p>
+                `;
+            } finally {
+                loadingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+
+</html>
